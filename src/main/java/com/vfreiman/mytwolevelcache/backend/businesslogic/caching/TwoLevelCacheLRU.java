@@ -3,23 +3,27 @@ package com.vfreiman.mytwolevelcache.backend.businesslogic.caching;
 import com.vfreiman.mytwolevelcache.backend.businesslogic.entities.Data;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * TwoLevelCache принимает в конструкторе максимальный размер кэша.
- * Распределяет его между кэшем в RAM и кэшем на HDD примерно пополам по признаку Least Recent Used
+ * TwoLevelCacheLRU принимает в конструкторе максимальный размер кэша.
+ * Распределяет его между кэшем в RAM и кэшем на HDD примерно пополам по стратегии Least Recent Used.
+ *
+ * TwoLevelCacheLRU takes cache size as a constructor argument.
+ * It distributes it between RAM cache and HDD cache about 50/50 by the Least Recent Used strategy.
  */
-public class TwoLevelCache implements LRUCache {
+public class TwoLevelCacheLRU implements LRUCache {
 
     private final int cacheSize;
     private final LRUCache ramCache;
     private final LRUCache hddCache;
     private int size;
 
-    public TwoLevelCache(int cacheSize) {
+    public TwoLevelCacheLRU(int cacheSize) {
         if (cacheSize < 2) throw new IllegalArgumentException("cache size can not be less than 2");
         this.cacheSize = cacheSize;
-        this.ramCache = new RAMCache();
-        this.hddCache = new HDDCache();
+        this.ramCache = new RAMCacheLRU();
+        this.hddCache = new HDDCacheLRU();
     }
 
     @Override
@@ -40,7 +44,8 @@ public class TwoLevelCache implements LRUCache {
 
     private void replace() {
         Map.Entry<String, Data> entry = (Map.Entry<String, Data>) ramCache.removeLRU();
-        hddCache.add(entry.getKey(), entry.getValue());
+        if (Objects.nonNull(entry))
+            hddCache.add(entry.getKey(), entry.getValue());
     }
 
     @Override
@@ -51,25 +56,32 @@ public class TwoLevelCache implements LRUCache {
     @Override
     public Data get(String name) {
         Data data = ramCache.get(name);
-        if (data != null) return data;
+        if (Objects.nonNull(data)) {
+            update(name, data);
+            return data;
+        }
 
-        return hddCache.get(name);
+        data = hddCache.get(name);
+        if (Objects.nonNull(data)) {
+            update(name, data);
+        }
+
+        return data;
     }
 
     @Override
     public boolean remove(String name) {
-        boolean removeRamCache = ramCache.remove(name);
-        boolean removeHddCache = hddCache.remove(name);
-
-        if (removeRamCache || removeHddCache) {
-            if (removeHddCache)
-                replace();
-
-            size--;
+        if (ramCache.remove(name)) {
+            size --;
             return true;
-        } else {
-            return false;
         }
+
+        if (hddCache.remove(name)) {
+            size --;
+            replace();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -89,7 +101,7 @@ public class TwoLevelCache implements LRUCache {
 
     @Override
     public String toString() {
-        return "TwoLevelCache{" +
+        return "TwoLevelCacheLRU{" +
                 "ramCache=" + ramCache +
                 ", hddCache=" + hddCache +
                 '}';

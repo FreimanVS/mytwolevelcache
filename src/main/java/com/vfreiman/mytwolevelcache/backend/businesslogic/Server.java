@@ -1,35 +1,36 @@
 package com.vfreiman.mytwolevelcache.backend.businesslogic;
 
 import com.vfreiman.mytwolevelcache.backend.businesslogic.caching.Cache;
-import com.vfreiman.mytwolevelcache.backend.businesslogic.caching.TwoLevelCache;
 import com.vfreiman.mytwolevelcache.backend.businesslogic.entities.Data;
 import com.vfreiman.mytwolevelcache.backend.database.Database;
 
 public class Server {
 
-    private final Cache twoLevelCache;
+    private final Cache cache;
 
-    public Server (int size) {
-        twoLevelCache = new TwoLevelCache(size);
+    public Server(Cache cache) {
+        this.cache = cache;
     }
 
     public Data get(final String name) {
-        if (twoLevelCache.contains(name)) {
+        if (cache.contains(name)) {
+
+            Data data = cache.get(name);
 
             System.out.printf("%s from cache.%n" +
                     "%s%n" +
                     "==============================%n" +
-                    "", name, twoLevelCache);
+                    "", name, cache);
 
-            return twoLevelCache.get(name);
+            return  data;
         } else {
             final Data obj = Database.getByName(name);
-            twoLevelCache.add(name, obj);
+            cache.add(name, obj);
 
             System.out.printf("%s not from cache.%n" +
                     "%s%n" +
                     "==============================%n" +
-                    "", name, twoLevelCache);
+                    "", name, cache);
 
             return obj;
         }

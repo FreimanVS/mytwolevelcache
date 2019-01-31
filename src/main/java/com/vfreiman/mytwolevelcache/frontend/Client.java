@@ -2,24 +2,13 @@ package com.vfreiman.mytwolevelcache.frontend;
 
 import com.vfreiman.mytwolevelcache.backend.businesslogic.Server;
 
-import java.util.stream.IntStream;
+public abstract class Client {
 
-public class Client {
-
-    private Server server;
+    protected Server server;
 
     public Client(Server server) {
         this.server = server;
     }
 
-    public void work() {
-        final int TIMES = 10;
-        IntStream.range(0, TIMES).forEach(n -> {
-            server.get("a");
-            server.get("b");
-            server.get("c");
-            server.get("d");
-            server.get("e");
-        });
-    }
+    public abstract void request();
 }

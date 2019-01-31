@@ -6,8 +6,9 @@ import com.vfreiman.mytwolevelcache.backend.businesslogic.services.Utils;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
-public class HDDCache implements LRUCache {
+public class HDDCacheLRU implements LRUCache {
 
     private static final Map<String, String> paths = new LinkedHashMap<>();
 
@@ -28,13 +29,9 @@ public class HDDCache implements LRUCache {
     public Data get(final String name) {
         final String path = paths.get(name);
         final Data data = (Data)Utils.deserialize(path);
-        update(name, data);
+        if (Objects.nonNull(data))
+            update(name, data);
         return data;
-    }
-
-    private void update(String name, Data data) {
-        remove(name);
-        add(name, data);
     }
 
     @Override

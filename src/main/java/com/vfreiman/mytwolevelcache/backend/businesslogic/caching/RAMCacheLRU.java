@@ -5,8 +5,9 @@ import com.vfreiman.mytwolevelcache.backend.businesslogic.entities.Data;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
-public class RAMCache implements LRUCache {
+public class RAMCacheLRU implements LRUCache {
 
     private static final Map<String, Data> cache = new LinkedHashMap<>();
 
@@ -22,7 +23,10 @@ public class RAMCache implements LRUCache {
 
     @Override
     public Data get(String name) {
-        return cache.get(name);
+        Data data = cache.get(name);
+        if (Objects.nonNull(data))
+            update(name, data);
+        return data;
     }
 
     @Override
