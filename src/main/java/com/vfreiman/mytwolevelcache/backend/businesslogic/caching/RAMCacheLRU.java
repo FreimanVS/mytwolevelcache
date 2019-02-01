@@ -9,7 +9,7 @@ import java.util.Objects;
 
 public class RAMCacheLRU implements LRUCache {
 
-    private static final Map<String, Data> cache = new LinkedHashMap<>();
+    private final Map<String, Data> cache = new LinkedHashMap<>();
 
     @Override
     public void add(String name, Data data) {

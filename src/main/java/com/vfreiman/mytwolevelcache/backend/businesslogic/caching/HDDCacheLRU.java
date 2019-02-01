@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class HDDCacheLRU implements LRUCache {
 
-    private static final Map<String, String> paths = new LinkedHashMap<>();
+    private final Map<String, String> paths = new LinkedHashMap<>();
 
     @Override
     public void add(final String name, final Data data) {

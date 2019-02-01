@@ -30,7 +30,6 @@ public class TwoLevelCacheLRU implements LRUCache {
 
     @Override
     public void add(String name, Data data) {
-
         if (size == cacheSize){
             hddCache.removeLRU();
             moveToHDDCache();
