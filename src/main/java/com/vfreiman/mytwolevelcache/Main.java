@@ -27,10 +27,11 @@ public class Main {
         new Client(new Server(cache)) {
             @Override
             public void request() {
-                IntStream.range(0, 3).forEach(n -> {
+                IntStream.range(0, 2).forEach(n -> {
                     server.get("a");
                     server.get("b");
                     server.get("c");
+                    server.get("d");
                 });
             }
         }.request();

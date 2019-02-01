@@ -53,4 +53,9 @@ public class HDDCacheLRU implements LRUCache {
     public String toString() {
         return paths.toString();
     }
+
+    @Override
+    public int size() {
+        return paths.size();
+    }
 }

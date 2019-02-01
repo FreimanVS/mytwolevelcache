@@ -48,4 +48,9 @@ public class RAMCacheLRU implements LRUCache {
     public String toString() {
         return cache.toString();
     }
+
+    @Override
+    public int size() {
+        return cache.size();
+    }
 }

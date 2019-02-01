@@ -7,4 +7,5 @@ public interface Cache {
     boolean contains(String name);
     Data get(String name);
     boolean remove(String name);
+    int size();
 }

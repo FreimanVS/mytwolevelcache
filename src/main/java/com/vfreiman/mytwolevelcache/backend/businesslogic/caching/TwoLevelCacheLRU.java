@@ -7,10 +7,12 @@ import java.util.Objects;
 
 /**
  * TwoLevelCacheLRU принимает в конструкторе максимальный размер кэша.
- * Распределяет его между кэшем в RAM и кэшем на HDD примерно пополам по стратегии Least Recent Used.
+ * Распределяет его между кэшем в RAM и кэшем на HDD примерно пополам по стратегии Least Recent Used,
+ * пока не достигнет cacheSize. Потом оставляет HDD cache максимально заполенным LRE элементами.
  *
  * TwoLevelCacheLRU takes cache size as a constructor argument.
- * It distributes it between RAM cache and HDD cache about 50/50 by the Least Recent Used strategy.
+ * It distributes it between RAM cache and HDD cache about 50/50 by the Least Recent Used strategy,
+ * until cacheSize is reached. Then it holds HDD cache filled with LRE elements.
  */
 public class TwoLevelCacheLRU implements LRUCache {
 
@@ -31,10 +33,10 @@ public class TwoLevelCacheLRU implements LRUCache {
 
         if (size == cacheSize){
             hddCache.removeLRU();
-            replace();
+            moveToHDDCache();
         } else {
             if (size >= cacheSize / 2)
-                replace();
+                moveToHDDCache();
 
             size ++;
         }
@@ -42,7 +44,12 @@ public class TwoLevelCacheLRU implements LRUCache {
         ramCache.add(name, data);
     }
 
-    private void replace() {
+    /**
+     * Переместить LRU элемент из RAM кэша в HDD кэш.
+     *
+     * Move LRU item from RAM cache to HDD cache.
+     */
+    private void moveToHDDCache() {
         Map.Entry<String, Data> entry = (Map.Entry<String, Data>) ramCache.removeLRU();
         if (Objects.nonNull(entry))
             hddCache.add(entry.getKey(), entry.getValue());
@@ -78,7 +85,7 @@ public class TwoLevelCacheLRU implements LRUCache {
 
         if (hddCache.remove(name)) {
             size --;
-            replace();
+            moveToHDDCache();
             return true;
         }
         return false;
@@ -93,10 +100,15 @@ public class TwoLevelCacheLRU implements LRUCache {
             entry = ramCache.removeLRU();
         } else {
             entry = hddCache.removeLRU();
-            replace();
+            moveToHDDCache();
         }
         size --;
         return entry;
+    }
+
+    @Override
+    public int size() {
+        return size;
     }
 
     @Override
