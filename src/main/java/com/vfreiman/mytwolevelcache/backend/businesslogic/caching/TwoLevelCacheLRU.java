@@ -113,8 +113,8 @@ public class TwoLevelCacheLRU implements LRUCache {
     @Override
     public String toString() {
         return "TwoLevelCacheLRU{" +
-                "ramCache=" + ramCache +
-                ", hddCache=" + hddCache +
+                "hddCache=" + hddCache +
+                ", ramCache=" + ramCache +
                 '}';
     }
 }
