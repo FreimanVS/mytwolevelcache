@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 public class Main {
@@ -20,24 +22,25 @@ public class Main {
          * one thread
          */
         final int SIZE = 4;
-        final Cache twoLevelCache = new TwoLevelCacheLRU(SIZE);
-        final Cache hddCache = new HDDCacheLRU();
-        final Cache ramCache = new RAMCacheLRU();
+        final LRUCache twoLevelCache = new TwoLevelCacheLRU(SIZE);
+        final LRUCache hddCache = new HDDCacheLRU();
+        final LRUCache ramCache = new RAMCacheLRU();
 
         clientRequest(twoLevelCache);
 
         /**
          * concurrent
          */
-        final Cache syncTwoLevelCache = Cachings.synchronizedCache(twoLevelCache);
-        final Cache syncHddCache = Cachings.synchronizedCache(hddCache);
-        final Cache syncRamCache = Cachings.synchronizedCache(ramCache);
+        final LRUCache syncTwoLevelCache = Cachings.synchronizedLRUCache(twoLevelCache);
+        final LRUCache syncHddCache = Cachings.synchronizedLRUCache(hddCache);
+        final LRUCache syncRamCache = Cachings.synchronizedLRUCache(ramCache);
 
 //        concurrentClientRequests(twoLevelCache, 300); //works with exceptions in concurrent
         concurrentClientRequests(syncTwoLevelCache, 300); //for concurrent use
     }
 
     private static void concurrentClientRequests(final Cache cache, final int threads) {
+        final ExecutorService es = Executors.newFixedThreadPool(threads);
         final List<CompletableFuture<Void>> futures = new ArrayList<>();
         final CountDownLatch latch = new CountDownLatch(1);
         IntStream.range(0, threads).forEach((n) -> {
@@ -49,12 +52,13 @@ public class Main {
                 }
 
                 clientRequest(cache);
-            });
+            }, es);
             futures.add(future);
         });
 
         latch.countDown();
         futures.forEach(CompletableFuture::join);
+        es.shutdown();
     }
 
     private static void clientRequest(final Cache cache) {

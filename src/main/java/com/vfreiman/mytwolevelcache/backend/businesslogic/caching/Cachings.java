@@ -2,11 +2,12 @@ package com.vfreiman.mytwolevelcache.backend.businesslogic.caching;
 
 import com.vfreiman.mytwolevelcache.backend.businesslogic.entities.Data;
 
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Cachings {
-    public static Cache synchronizedCache(Cache cache) {
-        return new Cache() {
+    public static LRUCache synchronizedLRUCache(LRUCache cache) {
+        return new LRUCache() {
 
             private final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock(false);
             private final ReentrantReadWriteLock.WriteLock writeLock = LOCK.writeLock();
@@ -47,6 +48,16 @@ public class Cachings {
                 try {
                     writeLock.lock();
                     return cache.remove(name);
+                } finally {
+                    writeLock.unlock();
+                }
+            }
+
+            @Override
+            public Map.Entry removeLRU() {
+                try {
+                    writeLock.lock();
+                    return cache.removeLRU();
                 } finally {
                     writeLock.unlock();
                 }
